@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import styles from "./page.module.css";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState("");
@@ -16,8 +18,7 @@ export default function Home() {
 
   const fetchPrivacyPolicy = async () => {
     try {
-      // Point this to your backend's URL
-      const res = await fetch("https://resumescorer-five.vercel.app/api/privacy-policy");
+      const res = await fetch(`${BACKEND_URL}/api/privacy-policy`);
       if (res.ok) {
         const data = await res.json();
         setPrivacyPolicy(data);
@@ -49,8 +50,7 @@ export default function Home() {
     if (jobDescription) formData.append("job_description", jobDescription);
 
     try {
-      // Update this URL to match your backend deployment
-      const response = await fetch("http://localhost:8000/api/score-resume", {
+      const response = await fetch(`${BACKEND_URL}/api/score-resume`, {
         method: "POST",
         body: formData,
       });
