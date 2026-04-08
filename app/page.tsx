@@ -17,7 +17,7 @@ export default function Home() {
   const fetchPrivacyPolicy = async () => {
     try {
       // Point this to your backend's URL
-      const res = await fetch("http://localhost:8000/api/privacy-policy");
+      const res = await fetch("https://resumescorer-five.vercel.app/api/privacy-policy");
       if (res.ok) {
         const data = await res.json();
         setPrivacyPolicy(data);
