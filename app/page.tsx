@@ -6,6 +6,7 @@ import styles from "./page.module.css";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<"resume" | "job">("resume");
   const [file, setFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
@@ -29,15 +30,24 @@ export default function Home() {
     }
   };
 
+  const handleTabSwitch = (tab: "resume" | "job") => {
+    setActiveTab(tab);
+    setError(null);
+    setResult(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
       setError("Please upload a resume PDF.");
       return;
     }
-    if ((jobTitle && !jobDescription) || (!jobTitle && jobDescription)) {
-      setError("Please provide both Job Title and Job Description, or neither.");
-      return;
+
+    if (activeTab === "job") {
+      if (!jobTitle || !jobDescription) {
+        setError("Please provide both Job Title and Job Description.");
+        return;
+      }
     }
 
     setError(null);
@@ -49,7 +59,7 @@ export default function Home() {
     
     let endpoint = `${BACKEND_URL}/api/score-resume`;
 
-    if (jobTitle && jobDescription) {
+    if (activeTab === "job") {
       formData.append("job_title", jobTitle);
       formData.append("job_description", jobDescription);
       endpoint = `${BACKEND_URL}/api/score-job-match`;
@@ -90,8 +100,25 @@ export default function Home() {
       <div className={styles.container}>
         <h1 className={styles.title}>AI Resume Scorer</h1>
         <p className={styles.subtitle}>
-          Upload your resume and an optional target job description to get instant feedback and an ATS match score.
+          Get instant feedback and an ATS match score.
         </p>
+
+        <div className={styles.tabs}>
+          <button 
+            type="button"
+            className={activeTab === "resume" ? styles.activeTab : styles.tab} 
+            onClick={() => handleTabSwitch("resume")}
+          >
+            Score Resume Only
+          </button>
+          <button 
+            type="button"
+            className={activeTab === "job" ? styles.activeTab : styles.tab} 
+            onClick={() => handleTabSwitch("job")}
+          >
+            Score for Job Match
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
@@ -105,32 +132,38 @@ export default function Home() {
             />
           </div>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="jobTitle">Job Title (Optional)</label>
-            <input
-              type="text"
-              id="jobTitle"
-              placeholder="e.g. Software Engineer"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-            />
-          </div>
+          {activeTab === "job" && (
+            <>
+              <div className={styles.inputGroup}>
+                <label htmlFor="jobTitle">Job Title</label>
+                <input
+                  type="text"
+                  id="jobTitle"
+                  placeholder="e.g. Software Engineer"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  required
+                />
+              </div>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="jobDescription">Job Description (Optional)</label>
-            <textarea
-              id="jobDescription"
-              placeholder="Paste the job description here..."
-              rows={5}
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-            />
-          </div>
+              <div className={styles.inputGroup}>
+                <label htmlFor="jobDescription">Job Description</label>
+                <textarea
+                  id="jobDescription"
+                  placeholder="Paste the job description here..."
+                  rows={5}
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
 
           {error && <div className={styles.error}>{error}</div>}
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? "Scoring..." : (jobTitle && jobDescription ? "Score for Job Match" : "Score My Resume")}
+            {loading ? "Scoring..." : (activeTab === "job" ? "Score for Job Match" : "Score My Resume")}
           </button>
         </form>
 

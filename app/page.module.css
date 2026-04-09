@@ -28,8 +28,50 @@
 .subtitle {
   text-align: center;
   color: #6b7280;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   font-size: 1.125rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  background-color: #f3f4f6;
+  padding: 6px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  color: #374151;
+  background-color: #e5e7eb;
+}
+
+.activeTab {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
 }
 
 .form {
