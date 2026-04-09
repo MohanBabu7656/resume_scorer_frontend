@@ -46,11 +46,17 @@ export default function Home() {
 
     const formData = new FormData();
     formData.append("file", file);
-    if (jobTitle) formData.append("job_title", jobTitle);
-    if (jobDescription) formData.append("job_description", jobDescription);
+    
+    let endpoint = `${BACKEND_URL}/api/score-resume`;
+
+    if (jobTitle && jobDescription) {
+      formData.append("job_title", jobTitle);
+      formData.append("job_description", jobDescription);
+      endpoint = `${BACKEND_URL}/api/score-job-match`;
+    }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/score-resume`, {
+      const response = await fetch(endpoint, {
         method: "POST",
         body: formData,
       });
@@ -84,7 +90,7 @@ export default function Home() {
       <div className={styles.container}>
         <h1 className={styles.title}>AI Resume Scorer</h1>
         <p className={styles.subtitle}>
-          Upload your resume and a target job description to get instant feedback and an ATS match score.
+          Upload your resume and an optional target job description to get instant feedback and an ATS match score.
         </p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -124,7 +130,7 @@ export default function Home() {
           {error && <div className={styles.error}>{error}</div>}
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? "Scoring..." : "Score My Resume"}
+            {loading ? "Scoring..." : (jobTitle && jobDescription ? "Score for Job Match" : "Score My Resume")}
           </button>
         </form>
 
@@ -151,7 +157,20 @@ export default function Home() {
         {result && (
           <div className={styles.results}>
             <h2>Results for {result.filename}</h2>
-            <div className={styles.gradeBadge}>Grade: {result.grade}</div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div className={styles.gradeBadge}>Grade: {result.grade}</div>
+              
+              {result.stats && (
+                <div style={{ display: 'flex', gap: '15px', background: '#f0f4f8', padding: '10px 15px', borderRadius: '8px', fontSize: '0.9rem', color: '#334155' }}>
+                  <span>📄 <strong>{result.stats.pages}</strong> {result.stats.pages === 1 ? 'page' : 'pages'}</span>
+                  <span>📝 <strong>{result.stats.word_count}</strong> words</span>
+                  <span style={{ fontWeight: 'bold', color: result.stats.word_count_optimal ? '#10b981' : '#ef4444' }}>
+                    {result.stats.word_count_optimal ? '✅ Optimal length' : '❌ Suboptimal length'}
+                  </span>
+                </div>
+              )}
+            </div>
 
             <div className={styles.scoreGrid}>
               <div className={styles.scoreCard}>
@@ -212,8 +231,19 @@ export default function Home() {
 
             <div className={styles.section}>
               <h3>Suggestions for Improvement</h3>
-              <ul>
-                {result.suggestions?.map((item: string, i: number) => <li key={i}>{item}</li>)}
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {result.suggestions?.map((item: any, i: number) => (
+                  <li key={i} style={{ background: '#f8fafc', padding: '15px', borderRadius: '8px', marginBottom: '10px', borderLeft: '4px solid #3b82f6' }}>
+                    <div style={{ marginBottom: '8px' }}>
+                      <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '0.85rem', textTransform: 'uppercase' }}>CURRENT</span>
+                      <p style={{ margin: '4px 0 0 0', fontStyle: 'italic', color: '#64748b' }}>"{item.current}"</p>
+                    </div>
+                    <div>
+                      <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '0.85rem', textTransform: 'uppercase' }}>SUGGESTED</span>
+                      <p style={{ margin: '4px 0 0 0', color: '#1e293b' }}>{item.suggested}</p>
+                    </div>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
