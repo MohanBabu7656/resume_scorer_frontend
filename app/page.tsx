@@ -57,7 +57,18 @@ export default function Home() {
 
       const data = await response.json();
       if (!response.ok || !data.success) {
-        setError(data.error || "An error occurred while scoring the resume.");
+        let errMsg = data.error || "An error occurred while scoring the resume.";
+        if (data.detail) {
+          if (typeof data.detail === "string") {
+            errMsg = data.detail;
+          } else if (data.detail.message) {
+            errMsg = data.detail.message;
+            if (data.detail.reasons && Array.isArray(data.detail.reasons) && data.detail.reasons.length > 0) {
+              errMsg += " - " + data.detail.reasons.join(", ");
+            }
+          }
+        }
+        setError(errMsg);
       } else {
         setResult(data);
       }
