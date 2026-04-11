@@ -163,7 +163,12 @@ export default function Home() {
           {error && <div className={styles.error}>{error}</div>}
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? "Scoring..." : (activeTab === "job" ? "Score for Job Match" : "Score My Resume")}
+            {loading ? (
+              <>
+                <div className={styles.spinner}></div>
+                Scoring...
+              </>
+            ) : (activeTab === "job" ? "Score for Job Match" : "Score My Resume")}
           </button>
         </form>
 
