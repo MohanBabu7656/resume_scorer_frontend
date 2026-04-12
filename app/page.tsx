@@ -382,7 +382,7 @@ export default function HomePage() {
             <div className="grid md:grid-cols-3 gap-5">
               {[
                 { title: "Strengths", icon: "✅", color: "#10b981", items: result.strengths, emptyMsg: "Strong overall structure", bullet: "text-emerald-500" },
-                { title: "Improvements", icon: "💡", color: "#f59e0b", items: result.improvements, emptyMsg: "Add quantified achievements", bullet: "text-amber-500" },
+                { title: "Improvements", icon: "💡", color: "#f59e0b", items: result.weaknesses, emptyMsg: "Add quantified achievements", bullet: "text-amber-500" },
               ].map(col => (
                 <div key={col.title} className="rounded-3xl p-6 border space-y-4" style={{ background: "#1e293b", borderColor: "#334155" }}>
                   <h3 className="font-bold text-sm flex items-center gap-2">
@@ -437,9 +437,9 @@ export default function HomePage() {
               <p className="text-sm text-slate-500 uppercase tracking-widest font-semibold mb-6">Score Breakdown</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center">
                 <RingScore score={result.ats_score} label="ATS" size={110} strokeWidth={9} />
-                <RingScore score={result.content_score} label="Content" size={110} strokeWidth={9} />
-                <RingScore score={result.format_score} label="Format" size={110} strokeWidth={9} />
-                <RingScore score={result.keyword_score} label="Keywords" size={110} strokeWidth={9} />
+                <RingScore score={result.skills_score} label="Skills" size={110} strokeWidth={9} />
+                <RingScore score={result.experience_score} label="Experience" size={110} strokeWidth={9} />
+                <RingScore score={result.formatting_score} label="Formatting" size={110} strokeWidth={9} />
               </div>
             </div>
 
