@@ -154,20 +154,26 @@ export default function HomePage() {
       const data = await res.json();
       
       if (!res.ok || data.success === false) {
-        let errMsg = data.error || `Error ${res.status}: ${res.statusText}`;
+        let errMsg = "An error occurred while processing the request.";
         if (data.detail) {
           if (typeof data.detail === "string") {
-            errMsg = data.detail; // Standard string error
+            errMsg = data.detail;
           } else if (Array.isArray(data.detail)) {
-            errMsg = data.detail.map((err: any) => err.msg || JSON.stringify(err)).join(", "); // FastAPI Validation errors
-          } else if (data.detail.message) {
-            errMsg = data.detail.message; // Llama Guard custom errors
-            if (data.detail.reasons && Array.isArray(data.detail.reasons) && data.detail.reasons.length > 0) {
+            // Directly map the exact error messages from the backend array
+            errMsg = data.detail.map((err: any) => err.msg || JSON.stringify(err)).join(", ");
+          } else if (typeof data.detail === "object") {
+            errMsg = data.detail.message || JSON.stringify(data.detail);
+            if (data.detail.reasons && Array.isArray(data.detail.reasons)) {
               errMsg += " - " + data.detail.reasons.join(", ");
             }
-          } else {
-            errMsg = JSON.stringify(data.detail);
+            if (data.detail.error) {
+              errMsg += ` (${data.detail.error})`;
+            }
           }
+        } else if (data.error) {
+          errMsg = data.error;
+        } else {
+          errMsg = `Error ${res.status}: ${res.statusText}`;
         }
         throw new Error(errMsg);
       }
@@ -423,7 +429,7 @@ export default function HomePage() {
             <div className="grid md:grid-cols-3 gap-5">
               {[
                 { title: "Strengths", icon: "✅", color: "#10b981", items: result.strengths, emptyMsg: "Strong overall structure", bullet: "text-emerald-500" },
-                { title: "Improvements", icon: "💡", color: "#f59e0b", items: result.weaknesses, emptyMsg: "Add quantified achievements", bullet: "text-amber-500" },
+                { title: "Weaknesses", icon: "⚠️", color: "#ef4444", items: result.weaknesses, emptyMsg: "No major weaknesses found", bullet: "text-red-500" },
               ].map(col => (
                 <div key={col.title} className="rounded-3xl p-6 border space-y-4" style={{ background: "#1e293b", borderColor: "#334155" }}>
                   <h3 className="font-bold text-sm flex items-center gap-2">
@@ -472,6 +478,48 @@ export default function HomePage() {
                 )}
               </div>
             </div>
+
+            {/* Suggestions for Improvement */}
+            {result.suggestions?.length > 0 && (
+              <div className="rounded-3xl p-6 border space-y-4" style={{ background: "#1e293b", borderColor: "#334155" }}>
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl flex items-center justify-center text-base" style={{ background: "rgba(245,158,11,0.18)", border: "1px solid rgba(245,158,11,0.25)" }}>💡</span>
+                  <span style={{ color: "#f59e0b" }}>Actionable Suggestions</span>
+                </h3>
+                <ul className="grid md:grid-cols-2 gap-4">
+                  {result.suggestions.map((item, i) => (
+                    typeof item === "string" ? (
+                      <li key={i} className="flex gap-2.5 text-sm col-span-full">
+                        <span className="text-amber-500 mt-0.5 text-xs flex-shrink-0">▸</span>
+                        <span className="text-slate-300 leading-relaxed">{item}</span>
+                      </li>
+                    ) : (
+                      <li key={i} className="rounded-2xl p-4 border space-y-3" style={{ background: "#0f172a", borderColor: "#334155" }}>
+                        {item.section && (
+                          <div className="inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider" style={{ background: "rgba(139,92,246,0.1)", color: "#c4b5fd" }}>
+                            {item.section}
+                          </div>
+                        )}
+                        <div>
+                          <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Current</span>
+                          <p className="text-sm text-slate-400 italic mt-1">&quot;{item.current}&quot;</p>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Suggested</span>
+                          <p className="text-sm text-slate-200 mt-1">{item.suggested}</p>
+                        </div>
+                        {item.reason && (
+                          <div className="pt-3 mt-3 border-t" style={{ borderColor: "rgba(51,65,85,0.5)" }}>
+                            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Reason</span>
+                            <p className="text-sm text-slate-300 mt-1">{item.reason}</p>
+                          </div>
+                        )}
+                      </li>
+                    )
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Score rings row */}
             <div className="rounded-3xl p-6 border" style={{ background: "#1e293b", borderColor: "#334155" }}>
