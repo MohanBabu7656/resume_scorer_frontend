@@ -109,6 +109,21 @@ export default function HomePage() {
   const [tab, setTab] = useState<"upload" | "result">("upload");
   const [mode, setMode] = useState<"resume" | "job">("resume");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [privacyPolicy, setPrivacyPolicy] = useState<any>(null);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  const fetchPrivacyPolicy = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/privacy-policy`);
+      if (res.ok) {
+        const data = await res.json();
+        setPrivacyPolicy(data);
+        setShowPrivacy(true);
+      }
+    } catch (err) {
+      console.error("Failed to fetch privacy policy:", err);
+    }
+  };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -139,7 +154,22 @@ export default function HomePage() {
       const data = await res.json();
       
       if (!res.ok || data.success === false) {
-        throw new Error(data.error || data.detail?.message || data.detail || `Error ${res.status}: ${res.statusText}`);
+        let errMsg = data.error || `Error ${res.status}: ${res.statusText}`;
+        if (data.detail) {
+          if (typeof data.detail === "string") {
+            errMsg = data.detail; // Standard string error
+          } else if (Array.isArray(data.detail)) {
+            errMsg = data.detail.map((err: any) => err.msg || JSON.stringify(err)).join(", "); // FastAPI Validation errors
+          } else if (data.detail.message) {
+            errMsg = data.detail.message; // Llama Guard custom errors
+            if (data.detail.reasons && Array.isArray(data.detail.reasons) && data.detail.reasons.length > 0) {
+              errMsg += " - " + data.detail.reasons.join(", ");
+            }
+          } else {
+            errMsg = JSON.stringify(data.detail);
+          }
+        }
+        throw new Error(errMsg);
       }
 
       // 4. Map the old backend's nested JSON to the new UI's ScoreResult interface
@@ -474,12 +504,35 @@ export default function HomePage() {
             <span>© 2025 ResumeScore.ai</span>
           </div>
           <div className="flex gap-6">
-            {["Privacy Policy", "Terms of Service", "Contact"].map(l => (
-              <a key={l} href="#" className="hover:text-slate-300 transition-colors">{l}</a>
-            ))}
+            <button onClick={fetchPrivacyPolicy} className="hover:text-slate-300 transition-colors text-left">Privacy Policy</button>
+            <a href="#" className="hover:text-slate-300 transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-slate-300 transition-colors">Contact</a>
           </div>
         </div>
       </footer>
+
+      {/* PRIVACY MODAL */}
+      {showPrivacy && privacyPolicy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">{privacyPolicy.title}</h2>
+              <button onClick={() => setShowPrivacy(false)} className="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            <div className="space-y-4 text-slate-300 text-sm">
+              <p><strong className="text-white">Data Collection:</strong> {privacyPolicy.data_collection}</p>
+              <p><strong className="text-white">Data Usage:</strong> {privacyPolicy.data_usage}</p>
+              <p><strong className="text-white">Data Retention:</strong> {privacyPolicy.data_retention}</p>
+              <p><strong className="text-white">Third Party:</strong> {privacyPolicy.third_party_sharing}</p>
+              <p><strong className="text-white">Security:</strong> {privacyPolicy.security}</p>
+            </div>
+            <button onClick={() => setShowPrivacy(false)} className="mt-8 w-full py-3 rounded-xl font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-colors">
+              Got it, close
+            </button>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }
