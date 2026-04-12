@@ -528,7 +528,11 @@ export default function HomePage() {
                 <RingScore score={result.ats_score} label="ATS" size={110} strokeWidth={9} />
                 <RingScore score={result.skills_score} label="Skills" size={110} strokeWidth={9} />
                 <RingScore score={result.experience_score} label="Experience" size={110} strokeWidth={9} />
-                <RingScore score={result.formatting_score} label="Formatting" size={110} strokeWidth={9} />
+            {result.job_match_score !== undefined ? (
+              <RingScore score={result.job_match_score} label="Job Match" size={110} strokeWidth={9} />
+            ) : (
+              <RingScore score={result.formatting_score} label="Formatting" size={110} strokeWidth={9} />
+            )}
               </div>
             </div>
 
