@@ -112,13 +112,41 @@ export default function HomePage() {
     setError(null);
     try {
       const body = new FormData();
-      body.append("resume", file);
-      if (mode === "job" && jobDesc) body.append("job_description", jobDesc);
-      const endpoint = mode === "job" ? "/score-with-jd" : "/score";
+      
+      // 1. Backend expects the file key to be "file", not "resume"
+      body.append("file", file); 
+      
+      if (mode === "job" && jobDesc) {
+        body.append("job_description", jobDesc);
+        // 2. Backend expects a job_title, so we provide a generic fallback
+        body.append("job_title", "Target Role"); 
+      }
+      
+      // 3. Use the correct endpoints from your old backend code
+      const endpoint = mode === "job" ? "/api/score-job-match" : "/api/score-resume";
+      
       const res = await fetch(`${BACKEND_URL}${endpoint}`, { method: "POST", body });
-      if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
-      const data: ScoreResult = await res.json();
-      setResult(data);
+      const data = await res.json();
+      
+      if (!res.ok || data.success === false) {
+        throw new Error(data.error || data.detail?.message || data.detail || `Error ${res.status}: ${res.statusText}`);
+      }
+
+      // 4. Map the old backend's nested JSON to the new UI's ScoreResult interface
+      const mappedData: ScoreResult = {
+        overall_score: data.scores?.overall || 0,
+        ats_score: data.scores?.ats || 0,
+        content_score: data.scores?.experience || 0,
+        format_score: data.scores?.skills || 0,
+        keyword_score: data.job_match?.match_score || data.scores?.ats || 0,
+        strengths: data.strengths || [],
+        improvements: data.suggestions?.map((s: any) => s.suggested) || data.weaknesses || [],
+        missing_keywords: data.job_match?.missing_keywords || [],
+        matched_keywords: data.job_match?.matched_keywords || [],
+        summary: `Your resume received a grade of ${data.grade || 'N/A'}. ${data.stats ? `Analyzed ${data.stats.word_count} words across ${data.stats.pages} pages.` : ''}`
+      };
+
+      setResult(mappedData);
       setTab("result");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Scoring failed. Check your connection.");
