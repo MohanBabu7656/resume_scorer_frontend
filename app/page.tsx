@@ -142,9 +142,9 @@ export default function HomePage() {
       // 1. Backend expects the file key to be "file", not "resume"
       body.append("file", file); 
       
-      if (mode === "job" && jobDesc) {
+      if (mode === "job") {
         body.append("job_description", jobDesc);
-        body.append("job_title", jobTitle || "Target Role"); 
+        body.append("job_title", jobTitle); 
       }
       
       // 3. Use the correct endpoints from your old backend code
@@ -447,36 +447,43 @@ export default function HomePage() {
                 </div>
               ))}
 
-              {/* Keywords */}
-              <div className="rounded-3xl p-6 border space-y-4" style={{ background: "#1e293b", borderColor: "#334155" }}>
-                <h3 className="font-bold text-sm flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-xl flex items-center justify-center text-base" style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)" }}>🔍</span>
-                  <span style={{ color: "#ef4444" }}>Keywords</span>
-                </h3>
-                {result.missing_keywords?.length > 0 && (
-                  <>
-                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Missing</p>
-                    <div className="flex flex-wrap gap-2">
-                      {result.missing_keywords.map((kw, i) => (
-                        <span key={i} className="text-xs rounded-xl px-3 py-1 border" style={{ background: "rgba(239,68,68,0.08)", borderColor: "rgba(239,68,68,0.2)", color: "#f87171" }}>{kw}</span>
-                      ))}
-                    </div>
-                  </>
-                )}
-                {result.matched_keywords?.length > 0 && (
-                  <>
-                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-2">Matched</p>
-                    <div className="flex flex-wrap gap-2">
-                      {result.matched_keywords.slice(0, 8).map((kw, i) => (
-                        <span key={i} className="text-xs rounded-xl px-3 py-1 border" style={{ background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.2)", color: "#34d399" }}>{kw}</span>
-                      ))}
-                    </div>
-                  </>
-                )}
-                {!result.missing_keywords?.length && !result.matched_keywords?.length && (
-                  <p className="text-sm text-slate-500">🎉 No critical keywords missing!</p>
-                )}
-              </div>
+              {/* Keywords (Only show if job matching was performed) */}
+              {result.job_match_score !== undefined && (
+                <div className="rounded-3xl p-6 border space-y-4" style={{ background: "#1e293b", borderColor: "#334155" }}>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-sm flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-xl flex items-center justify-center text-base" style={{ background: "rgba(6,182,212,0.18)", border: "1px solid rgba(6,182,212,0.25)" }}>🎯</span>
+                      <span style={{ color: "#06b6d4" }}>Job Match Analysis</span>
+                    </h3>
+                    <span className="text-sm font-bold" style={{ color: getColor(result.job_match_score) }}>
+                      {result.job_match_score}% Match
+                    </span>
+                  </div>
+                  {result.missing_keywords?.length > 0 && (
+                    <>
+                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Missing Keywords</p>
+                      <div className="flex flex-wrap gap-2">
+                        {result.missing_keywords.map((kw, i) => (
+                          <span key={i} className="text-xs rounded-xl px-3 py-1 border" style={{ background: "rgba(239,68,68,0.08)", borderColor: "rgba(239,68,68,0.2)", color: "#f87171" }}>{kw}</span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {result.matched_keywords?.length > 0 && (
+                    <>
+                      <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-2">Matched Keywords</p>
+                      <div className="flex flex-wrap gap-2">
+                        {result.matched_keywords.slice(0, 8).map((kw, i) => (
+                          <span key={i} className="text-xs rounded-xl px-3 py-1 border" style={{ background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.2)", color: "#34d399" }}>{kw}</span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {!result.missing_keywords?.length && !result.matched_keywords?.length && (
+                    <p className="text-sm text-slate-500">🎉 No critical keywords missing!</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Suggestions for Improvement */}
