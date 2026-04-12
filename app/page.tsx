@@ -101,6 +101,7 @@ function ScoreBar({ label, score, icon }: { label: string; score: number; icon: 
 export default function HomePage() {
   const [file, setFile] = useState<File | null>(null);
   const [jobDesc, setJobDesc] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -128,8 +129,7 @@ export default function HomePage() {
       
       if (mode === "job" && jobDesc) {
         body.append("job_description", jobDesc);
-        // 2. Backend expects a job_title, so we provide a generic fallback
-        body.append("job_title", "Target Role"); 
+        body.append("job_title", jobTitle || "Target Role"); 
       }
       
       // 3. Use the correct endpoints from your old backend code
@@ -284,14 +284,25 @@ export default function HomePage() {
 
               {/* Job desc */}
               {mode === "job" && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Job Description <span className="text-slate-500 font-normal">(paste full JD for best results)</span>
-                  </label>
-                  <textarea value={jobDesc} onChange={(e) => setJobDesc(e.target.value)}
-                    placeholder="Paste the job description here..." rows={6}
-                    className="w-full rounded-2xl p-4 text-sm resize-none outline-none"
-                    style={{ background: "#1e293b", border: "1.5px solid #334155", color: "#e2e8f0" }} />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Job Title
+                    </label>
+                    <input type="text" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)}
+                      placeholder="e.g. Senior Software Engineer"
+                      className="w-full rounded-2xl p-4 text-sm outline-none"
+                      style={{ background: "#1e293b", border: "1.5px solid #334155", color: "#e2e8f0" }} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Job Description <span className="text-slate-500 font-normal">(paste full JD for best results)</span>
+                    </label>
+                    <textarea value={jobDesc} onChange={(e) => setJobDesc(e.target.value)}
+                      placeholder="Paste the job description here..." rows={6}
+                      className="w-full rounded-2xl p-4 text-sm resize-none outline-none"
+                      style={{ background: "#1e293b", border: "1.5px solid #334155", color: "#e2e8f0" }} />
+                  </div>
                 </div>
               )}
 
